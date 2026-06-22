@@ -112,6 +112,7 @@ def pick(cart_x, cart_y, cart_z):
     close_end_effector()
     move_midpoint()
 
+# moves to specified coordinates, and drops object
 def place_at(x, y):
     controller.move_cartesian(x, y, 150, A,B,C,0,0,0,100,'#base',True)
     open_end_effector()
@@ -133,39 +134,31 @@ def draw(x, y):
 
 # storage for last valid move read from file
 new_move_coord_x, new_move_coord_y = 0,0
-moving = False
-
-def set_moving(bool_moving):
-	global moving
-	moving = bool_moving
-
-def get_moving():
-	global moving
-	return moving
 
 # reads the file and determines if there is a new move waiting
 def poll_move():
-	move_file = open("/home/mohnish_nanthakumar/cv/new_move.txt", 'r') # open file for reading
+	move_file = open("/home/mohnish_nanthakumar/robot_arm/cv/new_move.txt", 'r') # open file for reading
 	
 	# store move information
 	new_move_str = move_file.read()
-	new_move_arr = new_move_str.split(" ")
 	move_file.close()
-	# if the arm has not started executing on the move in the file, prepare for a move
-	if (int(new_move_arr[2]) == 0) and not get_moving():
-		global new_move_coord_x, new_move_coord_y
-		set_moving(True)
-		new_move_coord_x = float(new_move_arr[0])
-		new_move_coord_y = float(new_move_arr[1])
-		return True
 
-	return False
+	# if the file is empty, there is no new move to execute
+	if (new_move_str == ""):
+		return False
+
+	# otherwise, store the coordinates from the file
+	new_move_arr = new_move_str.split(" ")
+	# if the arm has not started executing on the move in the file, prepare for a move
+	global new_move_coord_x, new_move_coord_y
+	new_move_coord_x = float(new_move_arr[0])
+	new_move_coord_y = float(new_move_arr[1])
+	return True
 
 # set the move-completed flag in the file
 def update_move_file():
-	move_file = open("/home/mohnish_nanthakumar/cv/new_move.txt", 'wb')
-	move_file.seek(-2,2)
-	move_file.write("1")
+	move_file = open("/home/mohnish_nanthakumar/robot_arm/cv/new_move.txt", 'w')
+	move_file.write("")
 	move_file.close()
 
 ########### script to run ###########
@@ -177,8 +170,7 @@ while (True):
 	if poll_move():
 		logger.info(f"LOGGGGGGGEEEERRRRRRRRRR!!!!!!!!!!!!! {new_move_coord_x} {new_move_coord_y}")
 		pick(new_move_coord_x, new_move_coord_y, 10)
-		set_moving(False)
-		# update_move_file()
-
+		update_move_file()
+	sleep(.5)
 # exit gracefully
 exit_robot()
