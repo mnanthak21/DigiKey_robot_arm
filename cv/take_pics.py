@@ -31,21 +31,23 @@ robot_prev_x, robot_prev_y = 0,0
 
 # update txt file with new move
 def update_move_file(robot_targ_x, robot_targ_y):
-	new_move_write = open("new_move.txt", "w") # open file for writing
-	new_move_file.write(f"{robot_targ_x} {robot_targ_y} 0") # update file with target coordinates
-	new_move_file.close()
+	move_file = open("new_move.txt", "w") # open file for writing
+	move_file.write(f"{robot_targ_x} {robot_targ_y} 0") # update file with target coordinates
+	move_file.close()
+
 	# record this as the last known move
 	robot_prev_x, robot_prev_y = robot_targ_x, robot_targ_y
 
-def check_move_finished():
-	new_move_read = open("new_move.txt", "r") # open file for reading
-	new_move_read.seek(-1,2) # read last character
-	rfm = int(new_move_read.read())
-	new_move_file.close()
-	return (rfm == 1) # 1 means move finished, 0 means not yet finished
+def check_move_busy():
+	move_file = open("new_move.txt", "r") # open file for reading
+
+	# read the file contents, if there is nothing, move has finished
+	move_str = move_file.read()
+	move_file.close()
+	return (str != "")
 
 # run loop only if move finished
-while (check_move_finished()):
+while (not check_move_busy()):
 	# read in a frame
 	ret, frame = cap.read()
 
