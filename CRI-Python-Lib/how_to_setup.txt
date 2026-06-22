@@ -1,0 +1,18 @@
+AFTER BOOTING BEAGLE UP
+change ip - 192.168.3.1/24 to interface with robot arm
+activate venv - source venv/bin/activate
+install the python package - pip install .
+run desired script - e.g. python3 examples/relative_move.py
+
+THINGS TO REMEMBER WHEN RUNNING CRI scripts
+- we want to connect to 192.168.3.11 (the robot)
+- set active control
+- enable motors
+- reference all joints
+- add delays between referencing and enabling
+- when calling move functions, always use correct coordinates
+- when errors show up, check 1) network connection (ping google, ping robot arm),
+	check 2) for singularities, motor dead-ends, out-of-reach errors, etc. 
+	(plug robot into iRC; there must be a better way than this via CLI and commands from this library),
+	check 3) for improper environment setup (e.g. missing an include path, environment variable, package file)
+- consult: iRC software or wiki, CRI interface GitHub or API documentation
