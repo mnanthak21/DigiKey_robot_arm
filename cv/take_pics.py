@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image
+from time import sleep
 
 import coord_math
 
@@ -32,55 +33,69 @@ robot_prev_x, robot_prev_y = 0,0
 # update txt file with new move
 def update_move_file(robot_targ_x, robot_targ_y):
 	move_file = open("new_move.txt", "w") # open file for writing
-	move_file.write(f"{robot_targ_x} {robot_targ_y} 0") # update file with target coordinates
+	move_file.write(f"{robot_targ_x} {robot_targ_y}") # update file with target coordinates
 	move_file.close()
+	print("updatign!")
 
 	# record this as the last known move
-	robot_prev_x, robot_prev_y = robot_targ_x, robot_targ_y
+	global robot_prev_x, robot_prev_y
+	robot_prev_x, robot_prev_y = (robot_targ_x, robot_targ_y)
 
 def check_move_busy():
 	move_file = open("new_move.txt", "r") # open file for reading
-
+	print("checkign!")
 	# read the file contents, if there is nothing, move has finished
 	move_str = move_file.read()
 	move_file.close()
-	return (str != "")
+	return (move_str != "") # return whether or not the file is populated
 
 # run loop only if move finished
-while (not check_move_busy()):
-	# read in a frame
-	ret, frame = cap.read()
+def loop():
 
-	# convert the frame from BGR to HSV
-	hsvImage = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+	if (not check_move_busy()):
+		
+		# read in a frame
+		ret, frame = cap.read()
 
-	# mask the frame using the bounds defined above
-	mask = cv2.inRange(hsvImage, lowerLimit, upperLimit)
-	mask_ = Image.fromarray(mask)
+		# convert the frame from BGR to HSV
+		hsvImage = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-	bbox = mask_.getbbox()
-	if bbox is not None:
+		# mask the frame using the bounds defined above
+		mask = cv2.inRange(hsvImage, lowerLimit, upperLimit)
+		mask_ = Image.fromarray(mask)
 
-		# get coords of unmasked part of frame, and draw rectangle there
-		pixel_x1, pixel_y1, pixel_x2, pixel_y2 = bbox
-		cv2.rectangle(frame, (pixel_x1, pixel_y1), (pixel_x2, pixel_y2), (0,0,255), 5)
+		bbox = mask_.getbbox()
+		if bbox is not None:
 
-		# calculate center coords of bbox
-		pixel_x = (pixel_x1 + pixel_x2) / 2
-		pixel_y = (pixel_y1 + pixel_y2) / 2
+			# get coords of unmasked part of frame, and draw rectangle there
+			pixel_x1, pixel_y1, pixel_x2, pixel_y2 = bbox
+			cv2.rectangle(frame, (pixel_x1, pixel_y1), (pixel_x2, pixel_y2), (0,0,255), 5)
 
-		# convert from pixel coords to robot coords
-		robot_targ_x, robot_targ_y = coord_math.get_robot_coords(pixel_x, pixel_y)
-		# update file with new move if new robot coords are meaningfully different from previous move
-		if (coord_math.coords_different(robot_targ_x, robot_targ_y, robot_prev_x, robot_prev_y)):
-			update_move_file(robot_targ_x, robot_targ_y)
+			# calculate center coords of bbox
+			pixel_x = (pixel_x1 + pixel_x2) / 2
+			pixel_y = (pixel_y1 + pixel_y2) / 2
 
-	# display the frame with bounding box
-	cv2.imshow('frame', frame)
 
-	# save the frame
-	cv2.imwrite('frame.png', frame)
-	
+			# convert from pixel coords to robot coords
+			robot_targ_x, robot_targ_y = coord_math.get_robot_coords(pixel_x, pixel_y)
+			# update file with new move if new robot coords are meaningfully different from previous move
+			global robot_prev_x, robot_prev_y
+			print(f"{robot_targ_x} {robot_targ_y} {robot_prev_x} {robot_prev_y}")
+			coords_diff = coord_math.coords_different(robot_targ_x, robot_targ_y, robot_prev_x, robot_prev_y)
+			if coords_diff:
+				print("different!")
+				update_move_file(robot_targ_x, robot_targ_y)
+
+		# display the frame with bounding box
+		cv2.imshow('frame', frame)
+
+		# save the frame
+		cv2.imwrite('frame.png', frame)
+
+	sleep(.5)
+
+while (True):
+	loop()
 	# wait for key-press
 	if cv2.waitKey(1) & 0xFF == 27:
 		break
