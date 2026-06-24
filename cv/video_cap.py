@@ -21,16 +21,13 @@ cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 # setting bounds for desired color
 # lowerLimit, upperLimit = np.array([92,150,150]), np.array([123,255,255]) # blue
-# lowerLimit, upperLimit = np.array([45,150,150]), np.array([75,255,255]) # green
+lowerLimit, upperLimit = np.array([45,150,150]), np.array([75,255,255]) # green
 # lowerLimit, upperLimit = np.array([10,150,150]), np.array([20,255,255]) # orange
 
-lowerLimit, upperLimit = np.array([140,100,150]), np.array([160,255,255]) # pink
 # read in initial frame
 _, init_frame = cap.read()
 hsvImage = cv2.cvtColor(init_frame, cv2.COLOR_BGR2HSV)
-x = np.shape(hsvImage)
 
-print(f"{x}")
 # robot previous move info
 robot_prev_x, robot_prev_y = 0,0
 
@@ -61,12 +58,13 @@ def check_move_busy():
 
 # loop through only if file is empty
 while (True):
-	if (not check_move_busy()):
+	if (True):
 		print("File empty")
 		# read in a frame
 		ret, frame = cap.read()
 		
 		min_frame = frame[160:480,260:1080]
+		# min_frame = frame
 
 		if (ret == False): break
 
@@ -88,21 +86,13 @@ while (True):
 			pixel_x = (pixel_x1 + pixel_x2) / 2
 			pixel_y = (pixel_y1 + pixel_y2) / 2
 
-
-			# convert from pixel coords to robot coords
-			robot_targ_x, robot_targ_y = coord_math.get_robot_coords(pixel_x, pixel_y)
-			# update file with new move if new robot coords are meaningfully different from previous move
-			# print(f"{robot_targ_x} {robot_targ_y} {robot_prev_x} {robot_prev_y}")
-			coords_diff = coord_math.coords_different(robot_targ_x, robot_targ_y, robot_prev_x, robot_prev_y)
-			if coords_diff:
-				update_move_file(robot_targ_x, robot_targ_y)
-
+			print(f"{pixel_x} {pixel_y}")
 
 		# display the frame with bounding box
 		cv2.imshow('frame', min_frame)
 
 		# save the frame
-		cv2.imwrite('frame.png', frame)
+		# cv2.imwrite('frame.png', frame)
 
 	# wait for key-press
 	if cv2.waitKey(1) & 0xFF == 27:

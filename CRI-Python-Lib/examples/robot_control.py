@@ -51,6 +51,8 @@ def init_robot():
     controller.enable()
     sleep(2)
 
+    controller.reset()
+
     # Reference motors
     controller.get_referencing_info()
     ref_state = controller.reference_all_joints()
@@ -164,12 +166,15 @@ def update_move_file():
 ########### script to run ###########
 init_robot()
 
+update_move_file()
+
 while (True):
 
 	# if there is a new move available, execute on it and update the file
 	if poll_move():
 		logger.info(f"LOGGGGGGGEEEERRRRRRRRRR!!!!!!!!!!!!! {new_move_coord_x} {new_move_coord_y}")
-		pick(new_move_coord_x, new_move_coord_y, 10)
+		pick(new_move_coord_x, new_move_coord_y, 40)
+		place(2)
 		update_move_file()
 	sleep(.5)
 # exit gracefully
