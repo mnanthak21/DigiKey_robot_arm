@@ -158,7 +158,7 @@ def poll_move():
 	return True
 
 # set the move-completed flag in the file
-def update_move_file():
+def clear_move_file():
 	move_file = open("/home/mohnish_nanthakumar/robot_arm/cv/new_move.txt", 'w')
 	move_file.write("")
 	move_file.close()
@@ -166,7 +166,7 @@ def update_move_file():
 ########### script to run ###########
 init_robot()
 
-update_move_file()
+clear_move_file()
 
 while (True):
 
@@ -175,7 +175,7 @@ while (True):
 		logger.info(f"LOGGGGGGGEEEERRRRRRRRRR!!!!!!!!!!!!! {new_move_coord_x} {new_move_coord_y}")
 		pick(new_move_coord_x, new_move_coord_y, 40)
 		place(2)
-		update_move_file()
+		clear_move_file()
 	sleep(.5)
 # exit gracefully
 exit_robot()
